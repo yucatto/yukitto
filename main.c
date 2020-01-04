@@ -71,7 +71,7 @@ static void MX_USART2_UART_Init(void);
 TIM_MasterConfigTypeDef sTIM2MasterConfig;
 TIM_OC_InitTypeDef sTIM2ConfigOC;
 
-int ADCflag;
+__IO int ADCflag;
 uint16_t ADCData[ADC_DATA_SIZE];
 
 void outpwm(uint8_t rateL) {
@@ -90,7 +90,7 @@ void getADCvalue(ADC_HandleTypeDef *phadc, uint16_t *pData, uint16_t Length){
 
 	if(HAL_ADC_Start_DMA(phadc, pData, Length) != HAL_OK) Error_Handler();
 
-	while (ADCflag == 1);
+	while (ADCflag == 0);
 }
 
 /*uint32_t getADCvalue(ADC_HandleTypeDef *hadc) {
