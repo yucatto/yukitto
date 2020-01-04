@@ -71,10 +71,11 @@ static void MX_USART2_UART_Init(void);
 TIM_MasterConfigTypeDef sTIM2MasterConfig;
 TIM_OC_InitTypeDef sTIM2ConfigOC;
 
+int ADCflag;
 uint16_t ADCData[ADC_DATA_SIZE];
 
-void outpwm(int rateL) {
-	int rate = (16 - rateL) * 10;
+void outpwm(uint8_t rateL) {
+	uint8_t rate = (16 - rateL) * 10;
 
 	//sConfigOC.Pulse = rate;
 	sTIM2ConfigOC.Pulse = rate;
@@ -82,6 +83,14 @@ void outpwm(int rateL) {
 	if(HAL_TIMEx_MasterConfigSynchronization(&htim2, &sTIM2MasterConfig) != HAL_OK) Error_Handler();
 	if(HAL_TIM_PWM_ConfigChannel(&htim2, &sTIM2ConfigOC, TIM_CHANNEL_1) != HAL_OK) Error_Handler();
 	if(HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1) != HAL_OK) Error_Handler();
+}
+
+void getADCvalue(ADC_HandleTypeDef *phadc, uint16_t *pData, uint16_t Length){
+	ADCflag = 0;
+
+	if(HAL_ADC_Start_DMA(phadc, pData, Length) != HAL_OK) Error_Handler();
+
+	while (ADCflag == 1);
 }
 
 /*uint32_t getADCvalue(ADC_HandleTypeDef *hadc) {
@@ -152,8 +161,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(HAL_ADC_Start_DMA(&hadc1, ADCData, ADC_DATA_SIZE) != HAL_OK) Error_Handler();
-
+	  getADCvalue(&hadc1, ADCData, ADC_DATA_SIZE);
+	  if(ADCData[0] < 2000) {
+		  outpwm(0);
+	  }else{
+		  outpwm(16);
+	  }
 	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
@@ -450,7 +463,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	outpwm(t);
 
-	//(t < 15) ? (t ++) : (t = 0);
 	(t < 12) ? (t += 4) : (t = 0);
 }
 
@@ -466,9 +478,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	if(HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) Error_Handler();
-	//if(ADCData[0] < 2000 && ADCData[1] < 2000) outpwm(0);
-	if(ADCData[1] == 0) outpwm(0);
-	else outpwm(16);
+
+	ADCflag = 1;
 }
 /* USER CODE END 4 */
 
