@@ -464,7 +464,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc){
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	if(HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) Error_Handler();
 	//if(ADCData[0] < 2000 && ADCData[1] < 2000) outpwm(0);
 	if(ADCData[1] == 0) outpwm(0);
